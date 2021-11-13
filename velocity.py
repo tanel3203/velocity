@@ -123,7 +123,7 @@ def transform(output_list):
 	output = []
 	for txn in res:
 		accepted = mem.check_accept_and_add_if_accepted(txn["customer_id"], txn)
-		output.append({'id': txn['id'], 'customer_id': txn['customer_id'], 'accepted': accepted})
+		output.append(json.dumps({'id': txn['id'], 'customer_id': txn['customer_id'], 'accepted': accepted}))
 
 	return output
 
