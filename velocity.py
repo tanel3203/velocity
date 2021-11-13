@@ -2,45 +2,11 @@ import json
 from datetime import datetime
 
 
-
 def get_date_time_from_string(time):
 	return datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
 def get_amount_from_currency_string(load_amount):
 	return "{:.2f}".format(float(load_amount.replace('$', '')))
-
-def load():
-	with open('./input.txt', 'r') as json_file:
-		json_list = list(json_file)
-
-	output_list = []
-	for json_str in json_list:
-		result = json.loads(json_str)
-		id = result["id"]
-		customer_id = result["customer_id"]
-		load_amount = result["load_amount"]
-		time = get_date_time_from_string(result["time"])
-		output_list.append(result)
-
-	return output_list
-
-def transform(output_list):
-	'ensure data is sorted, then check for rules, then map to output'
-	res = sorted(output_list, key=lambda x: get_date_time_from_string(x["time"]))
-
-	mem = Memory()
-	output = []
-	for txn in res:
-		accepted = mem.check_accept_and_add_if_accepted(txn["customer_id"], txn)
-		output.append({'id': txn['id'], 'customer_id': txn['customer_id'], 'accepted': accepted})
-
-	return output
-
-
-def write(data):
-	with open("./output.txt", 'w') as out:
-		for txn in data:
-			out.write(str(txn) + '\n')
 
 
 class Memory:
@@ -97,7 +63,7 @@ class Memory:
 
 		new_total = existing_transaction_amount + new_txn_amount
 		if new_total >= 5000:
-			print(f"Rejection triggered - txn_day_amount_exceeded (total: {new_total})")
+			print(f"Rejection triggered - txn_day_amount_exceeded (total: {get_amount_from_currency_string(str(new_total))})")
 			return True
 		else:
 			return False
@@ -108,13 +74,11 @@ class Memory:
 
 		for txn in self.memory[customer_id]:
 			if self.same_week(txn['time'], new_txn['time']):
-				#print(isinstance(float(get_amount_from_currency_string(txn['load_amount'])), float))
-				#print(isinstance(get_amount_from_currency_string(txn['load_amount']), str))
 				existing_transaction_amount += float(get_amount_from_currency_string(txn['load_amount']))
 
 		new_total = existing_transaction_amount + new_txn_amount
 		if new_total >= 20000:
-			print(f"Rejection triggered - txn_week_amount_exceeded (total: {new_total})")
+			print(f"Rejection triggered - txn_week_amount_exceeded (total: {get_amount_from_currency_string(str(new_total))})")
 			return True
 		else:
 			return False
@@ -131,6 +95,43 @@ class Memory:
 
 
 
+
+
+
+
+
+def load():
+	with open('./input.txt', 'r') as json_file:
+		json_list = list(json_file)
+
+	output_list = []
+	for json_str in json_list:
+		result = json.loads(json_str)
+		id = result["id"]
+		customer_id = result["customer_id"]
+		load_amount = result["load_amount"]
+		time = get_date_time_from_string(result["time"])
+		output_list.append(result)
+
+	return output_list
+
+def transform(output_list):
+	'ensure data is sorted, then check for rules, then map to output'
+	res = sorted(output_list, key=lambda x: get_date_time_from_string(x["time"]))
+
+	mem = Memory()
+	output = []
+	for txn in res:
+		accepted = mem.check_accept_and_add_if_accepted(txn["customer_id"], txn)
+		output.append({'id': txn['id'], 'customer_id': txn['customer_id'], 'accepted': accepted})
+
+	return output
+
+
+def write(data):
+	with open("./output.txt", 'w') as out:
+		for txn in data:
+			out.write(str(txn) + '\n')
 
 
 if __name__ == "__main__":
