@@ -1,29 +1,4 @@
 
-
-load all
-	(assuming not ordered, so would need to load all)
-	ids unordered coming in
-order all
-	by time
-for each customer id 
-	check if current load amount crosses the
-		(1) max load amount for this day (5k)
-		(2) max load amount for this week (20k)
-		(3) max load count for this day (3x)
-
-
-each day ends at midnight (one sec after 23:59.59 UTC)
-each week ends at midnight after Sunday (one sec after 23:59:59 UTC)
-
-
-
-
-
-
-
-
-
-
 Challenge
 
 

@@ -1,17 +1,10 @@
-
-
 import json
 from datetime import datetime
 
 
 
 def get_date_time_from_string(time):
-	date_time_obj = datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
-
-	#print('Date:', date_time_obj.date())
-	#print('Time:', date_time_obj.time())
-	#print('Date-time:', date_time_obj)
-	return date_time_obj
+	return datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
 def get_amount_from_currency_string(load_amount):
 	return "{:.2f}".format(float(load_amount.replace('$', '')))
@@ -27,29 +20,13 @@ def load():
 		customer_id = result["customer_id"]
 		load_amount = result["load_amount"]
 		time = get_date_time_from_string(result["time"])
-		#print(f"result: {result}")
-		#print(f"customer_id: {customer_id} - load_amount: {load_amount} - time: {time} - id: {id}")
-		#print(f'Value is: ${load_amount:,.2f}'.replace('$-', '-$'))
-		
-		##print(f"result: {load_amount}")
-		#print(isinstance(result, dict))
 		output_list.append(result)
 
-	#res = sorted(output_list, key=lambda x: get_date_time_from_string(x["time"]))
-	#print(f"res: {res}")
 	return output_list
 
 def transform(output_list):
 	'ensure data is sorted, then check for rules, then map to output'
 	res = sorted(output_list, key=lambda x: get_date_time_from_string(x["time"]))
-
-	# for InputLoad, return OutputLoad
-	# maintain a memory (hashtable data structure, customer_id)
-	# check if stack has per customer
-	# 	accepted txns for that day, week - and count
-	# 	decide if accepted or not
-	# -> return OutputLoad
-
 
 	mem = Memory()
 	output = []
@@ -57,19 +34,13 @@ def transform(output_list):
 		accepted = mem.check_accept_and_add_if_accepted(txn["customer_id"], txn)
 		output.append({'id': txn['id'], 'customer_id': txn['customer_id'], 'accepted': accepted})
 
-
-
 	return output
 
 
 def write(data):
 	with open("./output.txt", 'w') as out:
-		#out.write(res)
-		#json.dump(data, out)
 		for txn in data:
-			#out.write(line)
 			out.write(str(txn) + '\n')
-
 
 
 class Memory:
@@ -92,8 +63,6 @@ class Memory:
 		else:
 			print(f"Reject customer {customer_id} transaction {new_txn}")
 			return False
-
-
 
 	def add_new_transaction(self, customerId, new_txn):
 		self.memory[customerId].append(new_txn)
@@ -161,93 +130,11 @@ class Memory:
 		return ds.isocalendar()[2] == dns.isocalendar()[2] and ds.isocalendar()[1] == dns.isocalendar()[1] and ds.year == dns.year
 
 
-class InputLoad:
-	'Common base class for input loads'
-	id = 0
-	customer_id = 0
-	load_amount = 0
-	time = datetime.utcnow()
-
-	def __init__(self, id, customer_id, load_amount, time):
-	  self.id = id
-	  self.customer_id = customer_id
-	  self.load_amount = load_amount
-	  self.time = time
-
-	def display(self):
-	  print ("Customer id : ", self.customer_id,  ", Load amount: ", self.load_amount)
-
-
-class OutputLoad:
-	'Common base class for output loads'
-	id = 0
-	customer_id = 0
-	accepted = False
-
-	def __init__(self, id, customer_id, accepted):
-	  self.id = id
-	  self.customer_id = customer_id
-	  self.accepted = accepted
-
-	def display(self):
-	  print ("Customer id : ", self.customer_id,  ", Accepted: ", self.accepted)
 
 
 
-
-
-def testing():
-
-	dict = {}
-
-	print(f"start: {dict}")
-	#del dict['Name'];
-
-	if "528" not in dict:
-		dict['528'] = []
-
-	intxn1 = {"id":"19366","customer_id":"443","load_amount":"$181.35","time":"2000-01-13T12:41:48Z"}
-	intxn2 = {"id":"19363","customer_id":"443","load_amount":"$117.35","time":"2000-01-13T12:42:48Z"}
-	intxn3 = {"id":"19361","customer_id":"443","load_amount":"$421.35","time":"2000-01-13T12:43:48Z"}
-	intxn4 = {"id":"19369","customer_id":"443","load_amount":"$181.35","time":"2000-01-13T12:47:48Z"}
-
-	txn1 = {"id":"15887","customer_id":"528","accepted":True}
-	txn2 = {"id":"30081","customer_id":"528","accepted":True}
-	txn3 = {"id":"26540","customer_id":"528","accepted":False}
-
-	dict['528'].append(txn1)
-	dict['528'].append(txn2)
-	dict['528'].append(txn3)
-
-	for txn in dict['528']:
-		print(f"txn: {txn}")
-
-	print(f"end: {dict}")
-
-	amount = intxn1["load_amount"]
-	print(f"amount: {amount}")
-
-	number_commas_only = get_amount_from_currency_string(amount)
-	print(number_commas_only)
-
-	print("Memory tests:")
-
-	mem = Memory()
-	mem.check_accept_and_add_if_accepted(intxn1["customer_id"], intxn1)
-	mem.check_accept_and_add_if_accepted(intxn2["customer_id"], intxn2)
-	mem.check_accept_and_add_if_accepted(intxn3["customer_id"], intxn3)
-	mem.check_accept_and_add_if_accepted(intxn3["customer_id"], intxn4)
-
-
-# dict structure
-#	customer_id 
-# 		id
-#		accepted
-
-
-
-
-extracted = load()
-transformed = transform(extracted)
-write(transformed)
+if __name__ == "__main__":
+	extracted = load()
+	transformed = transform(extracted)
+	write(transformed)
 
